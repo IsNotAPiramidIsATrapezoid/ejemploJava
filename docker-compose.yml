@@ -1,0 +1,30 @@
+version: "2.1"
+services:
+  users-ms:
+    build: .
+    ports:
+      - "3000:3000"
+    environment: 
+      LDAP_URL: '104.154.39.113'
+    depends_on:
+      users-db:
+        condition: service_healthy
+    healthcheck:
+      test: "curl -I users-ms:3000/users-ms/resources/users/ --fail"
+      interval: 20s
+      retries: 10
+
+  users-db:
+    image: mysql:5.7
+    healthcheck:
+      test: "mysqlcheck -u$$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE"
+      interval: 20s
+      timeout: 5s
+      retries: 15
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: users-db
+      MYSQL_USER: sa
+      MYSQL_PASSWORD: 123
+    ports:
+      - "3306:3306"
